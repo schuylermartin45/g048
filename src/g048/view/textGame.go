@@ -50,10 +50,18 @@ func (t *TextGame) drawStr(x int, y int, str string) {
  Draws the game entire gameboard/screen
 */
 func (t *TextGame) drawBoard() {
-	// TODO implement
+	// TODO improve
+	t.screen.Fill(' ', tcell.StyleDefault.Background(tcell.ColorBlack))
+	y := 1
 	t.board.RenderBoard(func(pos model.Coordinate, isEOL bool, tile model.Tile) {
-		// TODO implement
+		valueStr := fmt.Sprintf(" %06d ", tile)
+		x := int(pos.Col) * len(valueStr)
+		t.drawStr(x, y, valueStr)
+		if isEOL {
+			y++
+		}
 	})
+	t.screen.Sync()
 }
 
 /*
