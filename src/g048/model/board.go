@@ -161,7 +161,27 @@ func (b *Board) IsEndGame() bool {
  MoveLeft moves tiles to the left
 */
 func (b *Board) MoveLeft() {
-	// TODO implement
+	// Repeat the accumulation process until all positions move as far as they
+	// can.
+	for i := 1; i < BoardSize; i++ {
+		for row := 0; row < BoardSize; row++ {
+			for col := 1; col < BoardSize; col++ {
+				value := b.grid[row][col]
+				prevCol := col - 1
+				// If the previous value is 0, move the next value in
+				if b.grid[row][prevCol] == 0 {
+					b.grid[row][prevCol] = value
+					b.grid[row][col] = 0
+				} else if value == b.grid[row][prevCol] {
+					// If the values are equal, accumulate
+					b.grid[row][prevCol] *= 2
+					b.grid[row][col] = 0
+				}
+			}
+		}
+	}
+	// Every move generates a tile, if possible
+	b.generateTile()
 }
 
 /*
