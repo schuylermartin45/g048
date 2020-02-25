@@ -12,6 +12,8 @@ import (
 	"fmt"
 	"github.com/gdamore/tcell"
 	"os"
+	// Ticking away, the moments that make up the dull day...
+	"time"
 )
 
 /***** Types *****/
@@ -111,8 +113,7 @@ func (t *TextGame) initEventListener() {
 					os.Exit(EXIT_SUCCESS)
 					return
 				})
-				// Re-render the board on action to make visual feedback more
-				// apparent
+				// Re-render the board on a delta (the user has made a move).
 				t.drawBoard()
 			}
 		default:
@@ -147,10 +148,13 @@ func (t *TextGame) InitGame(b *model.Board) {
 
 // RenderGame runs the primary gameplay loop.
 func (t *TextGame) RenderGame() bool {
-	// TODO only redraw on board delta
+	// Draw the initial board. Subsequent renders will come on a user's action.
 	t.drawBoard()
-	// TODO mitigate the spin-lock
+	// This game only redraws when the user does something. So the main
+	// thread just has to spin-lock until the game is over. In an effort not
+	// to peg the CPU, we will make the thread sleep.
 	for !t.board.IsEndGame() {
+		time.Sleep(200 * time.Millisecond)
 	}
 	return true
 }
