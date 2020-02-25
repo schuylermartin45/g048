@@ -33,8 +33,8 @@ type Grid [BoardSize][BoardSize]Tile
 
 // Coordinate is a convenience structure that stores a (row,col) pairing.
 type Coordinate struct {
-	Row uint32
-	Col uint32
+	Row int
+	Col int
 }
 
 /*
@@ -91,8 +91,8 @@ func (b *Board) generateTile() {
 	// Since the board is relatively small, iterate over the entire board and
 	// record all possible positions.
 	var possiblePositions []*Coordinate
-	for row := uint32(0); row < BoardSize; row++ {
-		for col := uint32(0); col < BoardSize; col++ {
+	for row := 0; row < BoardSize; row++ {
+		for col := 0; col < BoardSize; col++ {
 			if b.grid[row][col] == 0 {
 				possiblePositions = append(possiblePositions, &Coordinate{row, col})
 			}
@@ -156,8 +156,8 @@ func (b *Board) GetDisplayScore() string {
  at a given position.
 */
 func (b *Board) RenderBoard(draw DrawTile) {
-	for row := uint32(0); row < BoardSize; row++ {
-		for col := uint32(0); col < BoardSize; col++ {
+	for row := 0; row < BoardSize; row++ {
+		for col := 0; col < BoardSize; col++ {
 			isEOL := (col + 1) == BoardSize
 			draw(Coordinate{row, col}, isEOL, b.grid[row][col])
 		}
@@ -207,8 +207,8 @@ func (b *Board) MoveLeft() {
 	// can.
 	for i := 1; i < BoardSize; i++ {
 		// Traverse the board
-		for row := uint32(0); row < BoardSize; row++ {
-			for col := uint32(1); col < BoardSize; col++ {
+		for row := 0; row < BoardSize; row++ {
+			for col := 1; col < BoardSize; col++ {
 				b.calcMove(Coordinate{row, col}, Coordinate{row, col - 1})
 			}
 		}
@@ -221,7 +221,14 @@ func (b *Board) MoveLeft() {
  MoveRight moves tiles to the right
 */
 func (b *Board) MoveRight() {
-	// TODO implement
+	for i := 1; i < BoardSize; i++ {
+		for row := 0; row < BoardSize; row++ {
+			for col := BoardSize - 2; col >= 0; col-- {
+				b.calcMove(Coordinate{row, col}, Coordinate{row, col + 1})
+			}
+		}
+	}
+	b.generateTile()
 }
 
 /*
@@ -229,8 +236,8 @@ func (b *Board) MoveRight() {
 */
 func (b *Board) MoveUp() {
 	for i := 1; i < BoardSize; i++ {
-		for row := uint32(1); row < BoardSize; row++ {
-			for col := uint32(0); col < BoardSize; col++ {
+		for row := 1; row < BoardSize; row++ {
+			for col := 0; col < BoardSize; col++ {
 				b.calcMove(Coordinate{row, col}, Coordinate{row - 1, col})
 			}
 		}
