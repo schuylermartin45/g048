@@ -57,6 +57,10 @@ type Board struct {
 	random *rand.Rand
 }
 
+// Helper lambda function that performs one iteration of the move process.
+// This is dependent on the direction.
+type moveBoard func()
+
 /***** Functions *****/
 
 /*
@@ -140,6 +144,24 @@ func (b *Board) calcMove(curPos Coordinate, nextPos Coordinate) {
 	}
 }
 
+/*
+ Helper function that de-dupes core move logic from directional iterations.
+
+ To quote my alma mater, "Make Moves, Son!"
+
+ @param move Helper lambda that iterates over the board in the desired
+             direction.
+*/
+func (b *Board) makeMove(move moveBoard) {
+	// Repeat the accumulation process until all positions move as far as they
+	// can.
+	for i := 1; i < BoardSize; i++ {
+		move()
+	}
+	// Every move generates a tile, if possible
+	b.generateTile()
+}
+
 /***** Members *****/
 
 /*
@@ -203,50 +225,50 @@ func (b *Board) IsEndGame() bool {
  MoveLeft moves tiles to the left
 */
 func (b *Board) MoveLeft() {
-	// Repeat the accumulation process until all positions move as far as they
-	// can.
-	for i := 1; i < BoardSize; i++ {
-		// Traverse the board
+	b.makeMove(func() {
 		for row := 0; row < BoardSize; row++ {
 			for col := 1; col < BoardSize; col++ {
 				b.calcMove(Coordinate{row, col}, Coordinate{row, col - 1})
 			}
 		}
-	}
-	// Every move generates a tile, if possible
-	b.generateTile()
+	})
 }
 
 /*
  MoveRight moves tiles to the right
 */
 func (b *Board) MoveRight() {
-	for i := 1; i < BoardSize; i++ {
+	b.makeMove(func() {
 		for row := 0; row < BoardSize; row++ {
 			for col := BoardSize - 2; col >= 0; col-- {
 				b.calcMove(Coordinate{row, col}, Coordinate{row, col + 1})
 			}
 		}
-	}
-	b.generateTile()
+	})
 }
 
 /*
  MoveUp moves tiles up
 */
 func (b *Board) MoveUp() {
-	for i := 1; i < BoardSize; i++ {
+	b.makeMove(func() {
 		for row := 1; row < BoardSize; row++ {
 			for col := 0; col < BoardSize; col++ {
 				b.calcMove(Coordinate{row, col}, Coordinate{row - 1, col})
 			}
 		}
-	}
+	})
 }
 
 /*
  MoveDown moves tiles down
 */
 func (b *Board) MoveDown() {
-	// TODO implement
+	b.makeMove(func() {
+		for row := BoardSize - 2; row >= 0; row-- {
+			for col := 0; col < BoardSize; col++ {
+				b.calcMove(Coordinate{row, col}, Coordinate{row + 1, col})
+			}
+		}
+	})
 }
