@@ -54,15 +54,26 @@ func (t *TextGame) drawStr(x int, y int, str string) {
 func (t *TextGame) drawBoard() {
 	// TODO improve
 	t.screen.Fill(' ', tcell.StyleDefault.Background(tcell.ColorBlack))
-	y := 1
+	// Screen constants
+	const (
+		valuePad    = 4
+		boardWidth  = valuePad * model.BoardSize
+		boardHeight = model.BoardSize
+	)
+	xScreen, yScreen := t.screen.Size()
+	// Screen variables
+	var (
+		xBoard = (xScreen / 2) - (boardWidth / 2)
+		yBoard = (yScreen / 2) - (boardHeight / 2)
+	)
+	y := yBoard
 	t.board.RenderBoard(func(pos model.Coordinate, isEOL bool, tile model.Tile) {
 		// Center the tile's value on the tile
-		const valuePad = 4
 		rPad := fmt.Sprintf(fmt.Sprintf("%%%dv", valuePad), tile)
 		valueStr := fmt.Sprintf(fmt.Sprintf("%%-%dv", valuePad), rPad)
 
 		// Place value as string on the board
-		x := int(pos.Col) * len(valueStr)
+		x := xBoard + (pos.Col * len(valueStr))
 		t.drawStr(x, y, valueStr)
 		if isEOL {
 			y++
