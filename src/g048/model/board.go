@@ -116,6 +116,30 @@ func (b *Board) initBoard() {
 	b.generateTile()
 }
 
+/*
+ Helper function that centralizes the move logic for all 4 moves, handling
+ the accumulation of values and the current score.
+
+ @param curPos  Current board position being examined
+ @param nextPos Next board position in the direction of the move. This is the
+                position that is being accumulated into.
+*/
+func (b *Board) calcMove(curPos Coordinate, nextPos Coordinate) {
+	curValue := b.grid[curPos.Row][curPos.Col]
+	nextValue := b.grid[nextPos.Row][nextPos.Col]
+	// If the other value is 0, move the current value in
+	if b.grid[nextPos.Row][nextPos.Col] == 0 {
+		b.grid[nextPos.Row][nextPos.Col] = curValue
+		b.grid[curPos.Row][curPos.Col] = 0
+	} else if curValue == nextValue {
+		// If the values are equal, accumulate
+		b.grid[nextPos.Row][nextPos.Col] *= 2
+		b.grid[curPos.Row][curPos.Col] = 0
+		// Score increments with the value accumulated
+		b.score += Score(nextValue)
+	}
+}
+
 /***** Members *****/
 
 /*
@@ -182,21 +206,10 @@ func (b *Board) MoveLeft() {
 	// Repeat the accumulation process until all positions move as far as they
 	// can.
 	for i := 1; i < BoardSize; i++ {
-		for row := 0; row < BoardSize; row++ {
-			for col := 1; col < BoardSize; col++ {
-				value := b.grid[row][col]
-				prevCol := col - 1
-				// If the previous value is 0, move the next value in
-				if b.grid[row][prevCol] == 0 {
-					b.grid[row][prevCol] = value
-					b.grid[row][col] = 0
-				} else if value == b.grid[row][prevCol] {
-					// If the values are equal, accumulate
-					b.grid[row][prevCol] *= 2
-					b.grid[row][col] = 0
-					// Score increments with the value accumulated
-					b.score += Score(b.grid[row][prevCol])
-				}
+		// Traverse the board
+		for row := uint32(0); row < BoardSize; row++ {
+			for col := uint32(1); col < BoardSize; col++ {
+				b.calcMove(Coordinate{row, col}, Coordinate{row, col - 1})
 			}
 		}
 	}
@@ -215,7 +228,13 @@ func (b *Board) MoveRight() {
  MoveUp moves tiles up
 */
 func (b *Board) MoveUp() {
-	// TODO implement
+	for i := 1; i < BoardSize; i++ {
+		for row := uint32(1); row < BoardSize; row++ {
+			for col := uint32(0); col < BoardSize; col++ {
+				b.calcMove(Coordinate{row, col}, Coordinate{row - 1, col})
+			}
+		}
+	}
 }
 
 /*
