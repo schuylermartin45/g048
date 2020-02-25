@@ -1,4 +1,4 @@
-# G048 (v0.1)
+# G048 (v0.5)
 
 ## An implementation of 2048 in Go
 
