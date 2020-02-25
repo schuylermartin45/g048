@@ -54,7 +54,12 @@ func (t *TextGame) drawBoard() {
 	t.screen.Fill(' ', tcell.StyleDefault.Background(tcell.ColorBlack))
 	y := 1
 	t.board.RenderBoard(func(pos model.Coordinate, isEOL bool, tile model.Tile) {
-		valueStr := fmt.Sprintf(" %06d ", tile)
+		// Center the tile's value on the tile
+		const valuePad = 4
+		rPad := fmt.Sprintf(fmt.Sprintf("%%%dv", valuePad), tile)
+		valueStr := fmt.Sprintf(fmt.Sprintf("%%-%dv", valuePad), rPad)
+
+		// Place value as string on the board
 		x := int(pos.Col) * len(valueStr)
 		t.drawStr(x, y, valueStr)
 		if isEOL {
