@@ -25,6 +25,9 @@ const (
 // Tile represents a single tile value on the board.
 type Tile uint32
 
+// Score represents the user's score
+type Score uint32
+
 // Grid represents tiles on the game board.
 type Grid [BoardSize][BoardSize]Tile
 
@@ -49,7 +52,7 @@ type Board struct {
 	// Current tile layout
 	grid Grid
 	// Game's current score.
-	score uint32
+	score Score
 	// Random number generator
 	random *rand.Rand
 }
@@ -143,18 +146,33 @@ func (b *Board) RenderBoard(draw DrawTile) {
  @return True if the game ended. False otherwise.
 */
 func (b *Board) IsEndGame() bool {
+	boundSize := BoardSize - 1
 	// To end the game:
 	//   1) The board must be filled.
 	//   2) There are no 2 adjacent tiles with the same value.
-	// TODO implement check #2
 	for row := 0; row < BoardSize; row++ {
 		for col := 0; col < BoardSize; col++ {
-			if b.grid[row][col] == 0 {
+			value := b.grid[row][col]
+			// Board is not filled
+			if value == 0 {
+				return false
+			}
+			// Check surrounding positions for equivalent values
+			if (row > 0) && (value == b.grid[row-1][col]) {
+				return false
+			}
+			if (row < boundSize) && (value == b.grid[row+1][col]) {
+				return false
+			}
+			if (col > 0) && (value == b.grid[row][col-1]) {
+				return false
+			}
+			if (col < boundSize) && (value == b.grid[row][col+1]) {
 				return false
 			}
 		}
 	}
-	return false
+	return true
 }
 
 /*
@@ -176,6 +194,8 @@ func (b *Board) MoveLeft() {
 					// If the values are equal, accumulate
 					b.grid[row][prevCol] *= 2
 					b.grid[row][col] = 0
+					// Score increments with the value accumulated
+					b.score += Score(b.grid[row][prevCol])
 				}
 			}
 		}
