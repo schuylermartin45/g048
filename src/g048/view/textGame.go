@@ -232,6 +232,18 @@ func (t *TextGame) RenderGame() bool {
 	for !t.board.IsEndGame() {
 		time.Sleep(200 * time.Millisecond)
 	}
+
+	// Count-down to play again
+	replayX, replayY := t.screen.Size()
+	replayY /= 2
+	promptColor := tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(tcell.ColorBlack)
+	for i := 10; i > 0; i-- {
+		displayStr := fmt.Sprintf("Playing again?...%02d (Esc to exit)", i)
+		newReplayX := (replayX / 2) - (len(displayStr) / 2)
+		t.drawStr(newReplayX, replayY, displayStr, promptColor)
+		t.screen.Show()
+		time.Sleep(time.Duration(1) * time.Second)
+	}
 	return true
 }
 
