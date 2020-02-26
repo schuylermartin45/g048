@@ -122,29 +122,19 @@ func (t *TextGame) drawBoard() {
 		// Default to the blank row (don't render the 0 for blank tiles)
 		valueStr := blankStr
 		if tile != 0 {
-			// TODO: fix for 3-length values
-			// Center the tile's value on the tile
-			tileStr := fmt.Sprintf("%v", tile)
-			halfTile := (len(tileStr) / 2)
-			// Single-digit numbers will int-divide to 0, so this keeps the pad
-			// length consistent and prevents gaps in the other calculations.
-			if halfTile == 0 {
-				halfTile++
-			}
-			tilePadLen := (blockWidth / 2) - halfTile
-			tilePad := ""
-			for i := 0; i < tilePadLen; i++ {
-				tilePad += " "
-			}
-			valueStr = tilePad + tileStr + tilePad
-			// For odd numbers, add additional missing padding
-			for len(valueStr) < blockWidth {
-				valueStr += " "
+			// Convert the value, pad to tile width.
+			valueStr = fmt.Sprintf("%d", tile)
+			for i := len(valueStr); i < blockWidth; i++ {
+				if (i % 2) == 0 {
+					valueStr = " " + valueStr
+				} else {
+					valueStr += " "
+				}
 			}
 		}
 
 		// Place value as string on the board
-		x := xBoard + (pos.Col * len(valueStr))
+		x := xBoard + (pos.Col * len(blankStr))
 		tileColor := getTileColor(tile)
 		t.drawStr(x, y+0, blankStr, tileColor)
 		t.drawStr(x, y+1, valueStr, tileColor)
