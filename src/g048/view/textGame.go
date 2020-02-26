@@ -24,6 +24,48 @@ type TextGame struct {
 	screen tcell.Screen
 }
 
+/***** Internal Functions *****/
+
+/*
+ Returns a color for each tile
+*/
+func getTileColor(tile model.Tile) tcell.Style {
+	tileColor := tcell.StyleDefault.Foreground(tcell.ColorBlack)
+	switch tile {
+	case 0:
+		tileColor = tileColor.Background(tcell.ColorLightGrey)
+	case 2:
+		tileColor = tileColor.Background(tcell.ColorDarkGrey)
+	case 4:
+		tileColor = tileColor.Background(tcell.ColorSlateGrey)
+	case 8:
+		tileColor = tileColor.Background(tcell.ColorGrey)
+	case 16:
+		tileColor = tileColor.Background(tcell.ColorTeal)
+	case 32:
+		tileColor = tileColor.Background(tcell.ColorTan)
+	case 64:
+		tileColor = tileColor.Background(tcell.ColorOrange)
+	case 128:
+		tileColor = tileColor.Background(tcell.ColorDarkOrange)
+	case 256:
+		tileColor = tileColor.Background(tcell.ColorOrangeRed)
+	case 512:
+		tileColor = tileColor.Background(tcell.ColorRed)
+	case 1024:
+		tileColor = tileColor.Background(tcell.ColorDarkRed)
+	case 2048:
+		tileColor = tileColor.Background(tcell.ColorDarkViolet)
+	case 4096:
+		tileColor = tileColor.Background(tcell.ColorBlueViolet)
+	// We don't have a lot of colors to work with so for now we'll make it boring
+	// pass 4096.
+	default:
+		tileColor = tileColor.Background(tcell.ColorSlateGrey)
+	}
+	return tileColor
+}
+
 /***** Internal Members *****/
 
 /*
@@ -52,12 +94,12 @@ func (t *TextGame) drawStr(x int, y int, str string, textColor tcell.Style) {
  Draws the game entire gameboard/screen
 */
 func (t *TextGame) drawBoard() {
-	// TODO improve
 	t.screen.Fill(' ', tcell.StyleDefault.Background(tcell.ColorBlack))
 	// Screen constants
 	const (
-		valuePad    = 4
-		boardWidth  = valuePad * model.BoardSize
+		blankStr    = "        " // No border
+		blockWidth  = len(blankStr)
+		boardWidth  = blockWidth * model.BoardSize
 		boardHeight = model.BoardSize
 	)
 	xScreen, yScreen := t.screen.Size()
@@ -77,15 +119,39 @@ func (t *TextGame) drawBoard() {
 	// Draw the board
 	y := yBoard
 	t.board.RenderBoard(func(pos model.Coordinate, isEOL bool, tile model.Tile) {
-		// Center the tile's value on the tile
-		rPad := fmt.Sprintf(fmt.Sprintf("%%%dv", valuePad), tile)
-		valueStr := fmt.Sprintf(fmt.Sprintf("%%-%dv", valuePad), rPad)
+		// Default to the blank row (don't render the 0 for blank tiles)
+		valueStr := blankStr
+		if tile != 0 {
+			// TODO: fix for 3-length values
+			// Center the tile's value on the tile
+			tileStr := fmt.Sprintf("%v", tile)
+			halfTile := (len(tileStr) / 2)
+			// Single-digit numbers will int-divide to 0, so this keeps the pad
+			// length consistent and prevents gaps in the other calculations.
+			if halfTile == 0 {
+				halfTile++
+			}
+			tilePadLen := (blockWidth / 2) - halfTile
+			tilePad := ""
+			for i := 0; i < tilePadLen; i++ {
+				tilePad += " "
+			}
+			valueStr = tilePad + tileStr + tilePad
+			// For odd numbers, add additional missing padding
+			for len(valueStr) < blockWidth {
+				valueStr += " "
+			}
+		}
 
 		// Place value as string on the board
 		x := xBoard + (pos.Col * len(valueStr))
-		t.drawStr(x, y, valueStr, whiteText)
+		tileColor := getTileColor(tile)
+		t.drawStr(x, y+0, blankStr, tileColor)
+		t.drawStr(x, y+1, valueStr, tileColor)
+		t.drawStr(x, y+2, blankStr, tileColor)
+		// Increment to draw the next row
 		if isEOL {
-			y++
+			y += 3
 		}
 	})
 	t.screen.Sync()
