@@ -29,16 +29,16 @@ type TextGame struct {
 /*
  Draws a string.
 
- @param x   Left-top corner x position of the string
- @param y   Left-top corner y position of the string
- @param str String to draw
+ @param x         Left-top corner x position of the string
+ @param y         Left-top corner y position of the string
+ @param str       String to draw
+ @param textColor Color to draw the text in
 */
-func (t *TextGame) drawStr(x int, y int, str string) {
+func (t *TextGame) drawStr(x int, y int, str string, textColor tcell.Style) {
 	sizeX, sizeY := t.screen.Size()
 	if (x < 0) || (y < 0) || (y > sizeY) {
 		return
 	}
-	textColor := tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(tcell.ColorBlack)
 	for row := 0; row < len(str); row++ {
 		screenX := x + row
 		if screenX > sizeX {
@@ -63,9 +63,18 @@ func (t *TextGame) drawBoard() {
 	xScreen, yScreen := t.screen.Size()
 	// Screen variables
 	var (
-		xBoard = (xScreen / 2) - (boardWidth / 2)
-		yBoard = (yScreen / 2) - (boardHeight / 2)
+		xBoard    = (xScreen / 2) - (boardWidth / 2)
+		yBoard    = (yScreen / 2) - (boardHeight / 2)
+		scoreStr  = t.board.GetDisplayScore()
+		xScore    = (xScreen / 2) - (len(scoreStr) / 2)
+		yScore    = yBoard - 2
+		whiteText = tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(tcell.ColorBlack)
 	)
+
+	// Draw the score above the board
+	t.drawStr(xScore, yScore, scoreStr, whiteText)
+
+	// Draw the board
 	y := yBoard
 	t.board.RenderBoard(func(pos model.Coordinate, isEOL bool, tile model.Tile) {
 		// Center the tile's value on the tile
@@ -74,7 +83,7 @@ func (t *TextGame) drawBoard() {
 
 		// Place value as string on the board
 		x := xBoard + (pos.Col * len(valueStr))
-		t.drawStr(x, y, valueStr)
+		t.drawStr(x, y, valueStr, whiteText)
 		if isEOL {
 			y++
 		}
